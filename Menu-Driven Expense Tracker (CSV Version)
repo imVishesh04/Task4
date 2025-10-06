@@ -1,0 +1,108 @@
+import csv
+import os
+from datetime import datetime
+
+# File to store expenses
+FILE_NAME = "expenses.csv"
+
+# Ensure the CSV file exists with correct headers
+def initialize_file():
+    if not os.path.exists(FILE_NAME):
+        with open(FILE_NAME, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Date", "Category", "Description", "Amount"])
+
+# Add a new expense entry
+def add_expense():
+    date = datetime.now().strftime("%Y-%m-%d")
+    category = input("Enter category (Food, Travel, Bills, etc.): ")
+    description = input("Enter description: ")
+    amount = input("Enter amount (₹): ")
+
+    with open(FILE_NAME, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([date, category, description, amount])
+    
+    print("\nExpense added successfully!\n")
+
+# View all expenses
+def view_expenses():
+    if not os.path.exists(FILE_NAME):
+        print("\nNo expenses recorded yet.\n")
+        return
+    
+    with open(FILE_NAME, mode='r') as file:
+        reader = csv.reader(file)
+        next(reader)  # skip header
+        print(f"\n{'Date':<12} {'Category':<15} {'Description':<25} {'Amount (₹)':>10}")
+        print("-" * 65)
+        for row in reader:
+            print(f"{row[0]:<12} {row[1]:<15} {row[2]:<25} {row[3]:>10}")
+    print()
+
+# Search expenses by category
+def search_expenses():
+    category = input("Enter category to search: ").lower()
+    found = False
+
+    with open(FILE_NAME, mode='r') as file:
+        reader = csv.reader(file)
+        next(reader)
+        print(f"\nExpenses under category: {category.title()}\n")
+        for row in reader:
+            if row[1].lower() == category:
+                print(f"{row[0]} | {row[1]} | {row[2]} | ₹{row[3]}")
+                found = True
+    
+    if not found:
+        print("No records found for this category.\n")
+
+# Monthly total summary
+def monthly_summary():
+    month = input("Enter month and year (MM-YYYY): ")
+    total = 0
+    found = False
+
+    with open(FILE_NAME, mode='r') as file:
+        reader = csv.reader(file)
+        next(reader)
+        for row in reader:
+            date = datetime.strptime(row[0], "%Y-%m-%d")
+            if date.strftime("%m-%Y") == month:
+                total += float(row[3])
+                found = True
+
+    if found:
+        print(f"\nTotal expenses for {month}: ₹{total}\n")
+    else:
+        print("\nNo expenses found for this month.\n")
+
+# Main menu
+def menu():
+    initialize_file()
+    while True:
+        print("===== EXPENSE TRACKER MENU =====")
+        print("1. Add Expense")
+        print("2. View All Expenses")
+        print("3. Search by Category")
+        print("4. Monthly Total Summary")
+        print("5. Exit")
+        choice = input("Enter your choice (1-5): ")
+
+        if choice == '1':
+            add_expense()
+        elif choice == '2':
+            view_expenses()
+        elif choice == '3':
+            search_expenses()
+        elif choice == '4':
+            monthly_summary()
+        elif choice == '5':
+            print("\nExiting... Goodbye!")
+            break
+        else:
+            print("Invalid choice! Please try again.\n")
+
+# Run the program
+if __name__ == "__main__":
+    menu()
